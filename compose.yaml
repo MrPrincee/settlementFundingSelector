@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: settlement-postgres
+    environment:
+      POSTGRES_DB: settlement_db
+      POSTGRES_USER: settlement_user
+      POSTGRES_PASSWORD: settlement_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - settlement_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  settlement_postgres_data:
