@@ -1,6 +1,7 @@
 package com.otarjojishvili.settlementfundingselector.algorithm;
 
 import com.otarjojishvili.settlementfundingselector.dto.InstructionRequest;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -8,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 
+
+@Component
 public class FundingAlgorithm {
 
     public List<InstructionRequest> chooseIns(
