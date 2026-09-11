@@ -1,0 +1,48 @@
+POST http://localhost:8080/api/v1/settlement/fund
+Content-Type: application/json
+
+{
+  "availableSettlementBalance": 20000,
+  "candidateInstructions": [
+    {
+      "instructionReference": "INS-2001",
+      "instructionAmount": 7000,
+      "expectedFee": 150
+    },
+    {
+      "instructionReference": "INS-2002",
+      "instructionAmount": 9000,
+      "expectedFee": 210
+    },
+    {
+      "instructionReference": "INS-2003",
+      "instructionAmount": 4000,
+      "expectedFee": 90
+    },
+    {
+      "instructionReference": "INS-2004",
+      "instructionAmount": 6000,
+      "expectedFee": 130
+    }
+  ]
+}
+
+###
+POST http://localhost:8080/api/v1/settlement/fund
+Content-Type: application/json
+
+{
+  "availableSettlementBalance": 1000,
+  "candidateInstructions": [
+    {
+      "instructionReference": "INS-3001",
+      "instructionAmount": 7000,
+      "expectedFee": 150
+    },
+    {
+      "instructionReference": "INS-3002",
+      "instructionAmount": 9000,
+      "expectedFee": 210
+    }
+  ]
+}
