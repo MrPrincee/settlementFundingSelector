@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.UUID;
+
 @RestController
 @RequestMapping("/api/v1/settlement")
 public class SettlementController {
@@ -31,5 +33,16 @@ public class SettlementController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(response);
+    }
+
+
+    @GetMapping("/{requestId}")
+    public ResponseEntity<SettlementFundingResponse> getById(
+            @PathVariable UUID requestId) {
+
+        SettlementFundingResponse response =
+                settlementService.getById(requestId);
+
+        return ResponseEntity.ok(response);
     }
 }

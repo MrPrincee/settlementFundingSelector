@@ -9,8 +9,10 @@ import com.otarjojishvili.settlementfundingselector.entity.SettlementInstruction
 import com.otarjojishvili.settlementfundingselector.entity.SettlementRequest;
 import com.otarjojishvili.settlementfundingselector.repository.SettlementInstructionRepository;
 import com.otarjojishvili.settlementfundingselector.repository.SettlementRequestRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
@@ -111,6 +113,56 @@ public class SettlementService {
         response.setSelectedInstructions(selectedResponses);
         response.setTotalSettlementConsumed(totalConsumed);
         response.setTotalExpectedFee(totalFee);
+        response.setCreatedAt(settlementRequest.getCreatedAt());
+
+        return response;
+    }
+
+    @Transactional(readOnly = true)
+    public SettlementFundingResponse getById(UUID requestId) {
+
+        SettlementRequest settlementRequest = requestRepository
+                .findById(requestId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Settlement request not found"
+                ));
+
+        List<SettlementInstruction> instructions =
+                instructionRepository.findByRequest_Id(requestId);
+
+        List<InstructionResponse> selectedResponses = new ArrayList<>();
+
+        for (SettlementInstruction instruction : instructions) {
+
+            if (instruction.isSelected()) {
+
+                InstructionResponse response = new InstructionResponse();
+
+                response.setInstructionReference(
+                        instruction.getInstructionReference()
+                );
+                response.setInstructionAmount(
+                        instruction.getInstructionAmount()
+                );
+                response.setExpectedFee(
+                        instruction.getExpectedFee()
+                );
+
+                selectedResponses.add(response);
+            }
+        }
+
+        SettlementFundingResponse response = new SettlementFundingResponse();
+
+        response.setRequestId(settlementRequest.getId());
+        response.setSelectedInstructions(selectedResponses);
+        response.setTotalSettlementConsumed(
+                settlementRequest.getTotalSettlementConsumed()
+        );
+        response.setTotalExpectedFee(
+                settlementRequest.getTotalExpectedFee()
+        );
         response.setCreatedAt(settlementRequest.getCreatedAt());
 
         return response;
