@@ -9,6 +9,10 @@ import com.otarjojishvili.settlementfundingselector.entity.SettlementInstruction
 import com.otarjojishvili.settlementfundingselector.entity.SettlementRequest;
 import com.otarjojishvili.settlementfundingselector.repository.SettlementInstructionRepository;
 import com.otarjojishvili.settlementfundingselector.repository.SettlementRequestRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -166,5 +170,65 @@ public class SettlementService {
         response.setCreatedAt(settlementRequest.getCreatedAt());
 
         return response;
+    }
+
+    @Transactional(readOnly = true)
+    public Page<SettlementFundingResponse> getAll(int page, int size) {
+
+        Pageable pageable = PageRequest.of(
+                page,
+                size,
+                Sort.by(Sort.Direction.DESC, "createdAt")
+        );
+
+        return requestRepository.findAll(pageable)
+                .map(settlementRequest -> {
+
+                    List<SettlementInstruction> instructions =
+                            instructionRepository.findByRequest_Id(
+                                    settlementRequest.getId()
+                            );
+
+                    List<InstructionResponse> selectedResponses =
+                            new ArrayList<>();
+
+                    for (SettlementInstruction instruction : instructions) {
+
+                        if (instruction.isSelected()) {
+
+                            InstructionResponse response =
+                                    new InstructionResponse();
+
+                            response.setInstructionReference(
+                                    instruction.getInstructionReference()
+                            );
+                            response.setInstructionAmount(
+                                    instruction.getInstructionAmount()
+                            );
+                            response.setExpectedFee(
+                                    instruction.getExpectedFee()
+                            );
+
+                            selectedResponses.add(response);
+                        }
+                    }
+
+                    SettlementFundingResponse response =
+                            new SettlementFundingResponse();
+
+                    response.setRequestId(settlementRequest.getId());
+                    response.setSelectedInstructions(selectedResponses);
+                    response.setTotalSettlementConsumed(
+                            settlementRequest.getTotalSettlementConsumed()
+                    );
+                    response.setTotalExpectedFee(
+                            settlementRequest.getTotalExpectedFee()
+                    );
+                    response.setCreatedAt(
+                            settlementRequest.getCreatedAt()
+                    );
+
+                    return response;
+                });
     }
 }

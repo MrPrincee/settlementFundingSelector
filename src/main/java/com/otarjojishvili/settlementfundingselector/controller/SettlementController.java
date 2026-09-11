@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.data.domain.Page;
+
 import java.util.UUID;
 
 @RestController
@@ -42,6 +44,17 @@ public class SettlementController {
 
         SettlementFundingResponse response =
                 settlementService.getById(requestId);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping
+    public ResponseEntity<Page<SettlementFundingResponse>> getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Page<SettlementFundingResponse> response =
+                settlementService.getAll(page, size);
 
         return ResponseEntity.ok(response);
     }

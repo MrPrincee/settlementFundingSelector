@@ -52,3 +52,11 @@ GET http://localhost:8080/api/v1/settlement/890002f4-a736-436d-8692-9b63ed69e016
 
 ###
 GET http://localhost:8080/api/v1/settlement/11111111-1111-1111-1111-111111111111
+
+
+###
+GET http://localhost:8080/api/v1/settlement?page=0&size=2
+
+
+###
+GET http://localhost:8080/api/v1/settlement?page=1&size=2
