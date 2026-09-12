@@ -1,8 +1,10 @@
 package com.otarjojishvili.settlementfundingselector.dto;
 
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 
 import java.math.BigDecimal;
 
@@ -13,10 +15,12 @@ public class InstructionRequest {
 
     @NotNull
     @Positive
+    @Digits(integer = 17, fraction = 2)
     private BigDecimal instructionAmount;
 
     @NotNull
-    @Positive
+    @PositiveOrZero
+    @Digits(integer = 17, fraction = 2)
     private BigDecimal expectedFee;
 
     public String getInstructionReference() {
@@ -45,5 +49,4 @@ public class InstructionRequest {
 
     public InstructionRequest() {
     }
-
 }

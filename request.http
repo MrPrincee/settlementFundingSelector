@@ -89,3 +89,36 @@ Content-Type: application/json
     }
   ]
 }
+
+###
+POST http://localhost:8080/api/v1/settlement/fund
+Content-Type: application/json
+
+{
+  "availableSettlementBalance": 0,
+  "candidateInstructions": []
+}
+
+###
+POST http://localhost:8080/api/v1/settlement/fund
+Content-Type: application/json
+
+{
+  "availableSettlementBalance": 1000.123,
+  "candidateInstructions": []
+}
+
+###
+POST http://localhost:8080/api/v1/settlement/fund
+Content-Type: application/json
+
+{
+  "availableSettlementBalance": 1000,
+  "candidateInstructions": [
+    {
+      "instructionReference": "INS-5001",
+      "instructionAmount": 100,
+      "expectedFee": 0
+    }
+  ]
+}

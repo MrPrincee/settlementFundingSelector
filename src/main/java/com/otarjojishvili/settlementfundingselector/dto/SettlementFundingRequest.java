@@ -1,9 +1,9 @@
 package com.otarjojishvili.settlementfundingselector.dto;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -11,10 +11,11 @@ import java.util.List;
 public class SettlementFundingRequest {
 
     @NotNull
-    @Positive
+    @PositiveOrZero
+    @Digits(integer = 17, fraction = 2)
     private BigDecimal availableSettlementBalance;
 
-    @NotEmpty
+    @NotNull
     @Valid
     private List<InstructionRequest> candidateInstructions;
 
