@@ -16,6 +16,18 @@ The application selects the combination of instructions that maximizes the total
 - JUnit 5
 - Mockito
 
+## Project Structure
+
+The application is separated into the following layers:
+
+- `controller` - REST API endpoints
+- `service` - business logic and transaction handling
+- `repository` - database access using Spring Data JPA
+- `algorithm` - funding selection logic
+- `entity` - database entities
+- `dto` - API request and response models
+- `exception` - API error handling
+
 ## How It Works
 
 Each funding request contains:
@@ -32,11 +44,13 @@ Each instruction can either be fully selected or not selected. Partial funding i
 
 The goal is to maximize the total expected fee while keeping the total settlement amount within the available balance.
 
+The algorithm stores the best funding option for each reachable settlement amount. Its practical complexity depends on the number of distinct reachable amounts. In the worst case, the number of possible states can grow significantly with the number of candidate instructions.
+
 Every request and all candidate instructions are stored in PostgreSQL for audit purposes. Each instruction is stored with a `selected` flag.
 
 ## Database
 
-The application uses PostgreSQL.
+The application uses PostgreSQL 17 running in Docker.
 
 Start the database with:
 
@@ -53,17 +67,17 @@ Password: settlement_password
 Port: 5432
 ```
 
-Flyway manages the database schema.
+Flyway manages the database schema and migrations.
 
-The project contains migrations for:
+The database contains two main tables:
 
-- settlement request and instruction tables
-- database indexes
+- `settlement_requests` stores the request ID, available balance, total settlement consumed, total expected fee and creation time.
+- `settlement_instructions` stores every candidate instruction, its amount, expected fee, reference, related request and whether it was selected.
 
 The following indexes are used:
 
-- `settlement_instructions(request_id)` for retrieving instructions belonging to a settlement request
-- `settlement_requests(created_at desc)` for newest-first pagination
+- `settlement_instructions(request_id)` improves retrieval of instructions belonging to a settlement request.
+- `settlement_requests(created_at desc)` supports newest-first pagination.
 
 ## Running the Application
 
@@ -73,7 +87,7 @@ Make sure PostgreSQL is running:
 docker compose up -d
 ```
 
-Run the application:
+Run the application with Maven:
 
 ```bash
 ./mvnw spring-boot:run
@@ -90,6 +104,22 @@ The API runs on:
 ```text
 http://localhost:8080
 ```
+
+### Running the Packaged JAR
+
+Build the application:
+
+```powershell
+.\mvnw clean package
+```
+
+Run the generated executable JAR:
+
+```powershell
+java -jar target\settlementFundingSelector-0.0.1-SNAPSHOT.jar
+```
+
+Make sure the PostgreSQL container is running before starting the JAR.
 
 ## API Endpoints
 
@@ -155,6 +185,54 @@ Returns settlement requests using pagination, ordered from newest to oldest.
 
 `page` must be greater than or equal to `0` and `size` must be greater than `0`.
 
+## cURL Examples
+
+### Fund Settlement Instructions
+
+```bash
+curl -X POST http://localhost:8080/api/v1/settlement/fund \
+  -H "Content-Type: application/json" \
+  -d '{
+    "availableSettlementBalance": 20000,
+    "candidateInstructions": [
+      {
+        "instructionReference": "INS-2001",
+        "instructionAmount": 7000,
+        "expectedFee": 150
+      },
+      {
+        "instructionReference": "INS-2002",
+        "instructionAmount": 9000,
+        "expectedFee": 210
+      },
+      {
+        "instructionReference": "INS-2003",
+        "instructionAmount": 4000,
+        "expectedFee": 90
+      },
+      {
+        "instructionReference": "INS-2004",
+        "instructionAmount": 6000,
+        "expectedFee": 130
+      }
+    ]
+  }'
+```
+
+### Get Settlement Request
+
+Replace `{requestId}` with the UUID returned by the funding endpoint.
+
+```bash
+curl http://localhost:8080/api/v1/settlement/{requestId}
+```
+
+### List Settlement Requests
+
+```bash
+curl "http://localhost:8080/api/v1/settlement?page=0&size=10"
+```
+
 ## Validation
 
 Invalid request data returns HTTP `400 Bad Request`.
@@ -167,6 +245,8 @@ Examples include:
 - missing required fields
 - monetary values with more than two decimal places
 - invalid pagination parameters
+
+A settlement balance of zero and an empty candidate instruction list are allowed. If no instruction is selected, the API returns HTTP `200 OK` with zero totals.
 
 ## Tests
 
@@ -185,6 +265,8 @@ Run tests with:
 .\mvnw test
 ```
 
+The complete test suite currently contains 6 tests.
+
 ## Build
 
 Create the executable JAR with:
@@ -193,4 +275,14 @@ Create the executable JAR with:
 .\mvnw clean package
 ```
 
-The generated JAR will be available in the `target` directory.
+The generated JAR is available at:
+
+```text
+target/settlementFundingSelector-0.0.1-SNAPSHOT.jar
+```
+
+Run it with:
+
+```powershell
+java -jar target\settlementFundingSelector-0.0.1-SNAPSHOT.jar
+```
