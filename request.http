@@ -122,3 +122,9 @@ Content-Type: application/json
     }
   ]
 }
+
+###
+GET http://localhost:8080/api/v1/settlement?page=-1&size=10
+
+###
+GET http://localhost:8080/api/v1/settlement?page=0&size=0

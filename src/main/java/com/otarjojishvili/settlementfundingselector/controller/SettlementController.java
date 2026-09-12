@@ -4,11 +4,11 @@ import com.otarjojishvili.settlementfundingselector.dto.SettlementFundingRequest
 import com.otarjojishvili.settlementfundingselector.dto.SettlementFundingResponse;
 import com.otarjojishvili.settlementfundingselector.service.SettlementService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import org.springframework.data.domain.Page;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.UUID;
 
@@ -37,7 +37,6 @@ public class SettlementController {
                 .body(response);
     }
 
-
     @GetMapping("/{requestId}")
     public ResponseEntity<SettlementFundingResponse> getById(
             @PathVariable UUID requestId) {
@@ -52,6 +51,13 @@ public class SettlementController {
     public ResponseEntity<Page<SettlementFundingResponse>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
+
+        if (page < 0 || size <= 0) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Page must be >= 0 and size must be > 0"
+            );
+        }
 
         Page<SettlementFundingResponse> response =
                 settlementService.getAll(page, size);
